@@ -1,49 +1,65 @@
 # coding = utf-8
+#2017-9-10 JoeyChui sa517045@mail.ustc.edu.cn
 
 import urllib, requests
 
-def CrawlWeiZS(keyword, sdate, edate):
-    keyword = urllib.parse.quote(keyword)
-    #first requests:get cookie_id
-    cookie_header = {
-                     "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36",
-                     "Referer":"http://data.weibo.com/index?sudaref=www.google.com"
-                    }
-    first_requests_url = "http://data.weibo.com/index/ajax/hotword?word={}&flag=nolike&_t=0".format(keyword)
-    requests_result = requests.get(first_requests_url, headers = cookie_header).json()
-    cookie_id = requests_result["data"]["id"]
+def getWID(keyword):
+    header = {
+                 "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36",
+                 "Referer":"http://data.weibo.com/index?sudaref=www.google.com"
+             }
+    url = "http://data.weibo.com/index/ajax/hotword?word={}&flag=nolike&_t=0".format(keyword)
+    result = requests.get(url, headers = header).json()
+    wid = result["data"]["id"]
+    return wid
 
-	#second requests:get WeiZhiShu data
-	header = {
+def getWeiZSOrigin(keyword, sDate, eDate):
+    keyword = urllib.parse.quote(keyword)
+    wid = getWID(keyword)
+    header = {
 			  "Connection":"keep-alive",
 			  "Accept-Encoding": "gzip, deflate, sdch",
 			  "Accept": "*/*",
 			  "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36",
 			  "Accept-Language": "zh-CN,zh;q=0.8",
-			  "Referer": "http://data.weibo.com/index/hotword?wid={}&wname={}".format(cookie_id, keyword),
+			  "Referer": "http://data.weibo.com/index/hotword?wid={}&wname={}".format(wid, keyword),
 			  "Content-Type": "application/x-www-form-urlencoded",
 			  "Host":"data.weibo.com"
     		 }
+    url = "http://data.weibo.com/index/ajax/getchartdata?wid={}&sdate={}&edate={}".format(wid, sDate, eDate)
+    result = requests.get(url, headers = header).json()
+    return result
 
-    second_requests_url = "http://data.weibo.com/index/ajax/getchartdata?wid={}&sdate={}&edate={}".format(cookie_id, sdate, edate)
-    requests_result = requests.get(second_requests_url, headers = header).json()
-    return requests_result
+def getWeiZSVaule(weiZSOrigin):
+    weiZSVaule = weiZSOrigin['zt']
+    return weiZSVaule
 
+def writeToTXT(content, fileName):
+    with open('%s.txt' % fileName, 'a', encoding='utf-8') as f:
+        f.write(json.dumps(content, ensure_ascii=False) + '\n')
+        f.close()
+    return
 '''
-    #获取日期
-    date_url = "http://data.weibo.com/index/ajax/getdate?month=1&__rnd=1498190033389"
-    dc = requests.get(date_url,headers=header).json()
-    edate,sdate = dc["edate"],dc["sdate"]
-
-    import cProfile
-    cProfile.run('CrawlWeiZS("杨幂", "2013-03-01", "2017-08-01")')
+def writeToXLS(content, fileName):
+    workbook = xlwt.Workbook(encoding='utf-8')
+    booksheet = workbook.add_sheet('Sheet 1', cell_overwrite_ok=True)
+    for i, rowVal in enumerate(content):
+        for j, colVal in enumerate(rowVal):
+            booksheet.write(i, j, colVal)
+    workbook.save('%s.xls' % fileName)
+    return
 '''
 
-keywords = ["黄晓明", "杨幂", "刘德华", "周杰伦", "关晓彤", "周杰伦", 
-            "刘亦菲", "高圆圆", "古力娜扎", "唐嫣", "许嵩", "apple", "google"]
-sdate, edate = "2013-03-01", "2017-08-01"
+def crawlWeiZS(keywords, sDate, eDate):
+    for keyword in keywords:
+        f = open('%s.txt' % keyword, 'w')
+        weiZSOrigin = getWeiZSOrigin(keyword, sDate, eDate)
+        weiZSVaule = getWeiZSVaule(weiZSOrigin)
+        print(int(weiZSVaule[0]['day_key'].replace('-', '')) == 20170801)
+        f.write(str(weiZSVaule))
+        f.close()
 
-for keyword in keywords:
-    f = open(r'C:\Users\JoeyChui\Desktop\{}.txt'.format(keyword), 'w+')
-    f.write(str(CrawlWeiZS(keyword, sdate, edate)))
-    f.close()
+
+keywords = ["中国新歌声"]
+sDate, eDate = "2017-08-01", "2017-08-10"
+crawlWeiZS(keywords, sDate, eDate)
