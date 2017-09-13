@@ -1,4 +1,4 @@
-# coding = utf-8
+#coding = utf-8
 #2017-9-10 JoeyChui sa517045@mail.ustc.edu.cn
 
 import urllib, requests
@@ -10,7 +10,10 @@ def getWID(keyword):
              }
     url = "http://data.weibo.com/index/ajax/hotword?word={}&flag=nolike&_t=0".format(keyword)
     result = requests.get(url, headers = header).json()
-    wid = result["data"]["id"]
+    if result['code'] != '100000':
+        print('ER:%s' % keyword)
+        return
+    wid = result['data']['id']  
     return wid
 
 def getWeiZSOrigin(keyword, sDate, eDate):
@@ -30,36 +33,29 @@ def getWeiZSOrigin(keyword, sDate, eDate):
     result = requests.get(url, headers = header).json()
     return result
 
-def getWeiZSVaule(weiZSOrigin):
-    weiZSVaule = weiZSOrigin['zt']
+def getWeiZSVaule(keyword, weiZSOrigin):
+    weiZSVaule = {}
+    weiZSVaule['keyword'] = keyword
+    weiZSZT = weiZSOrigin['zt']
+    for ii in range(len(weiZSZT)-1):
+        weiZSVaule[weiZSZT[ii]['day_key'].replace('-','')] = weiZSZT[ii]['value']
     return weiZSVaule
 
 def writeToTXT(content, fileName):
     with open('%s.txt' % fileName, 'a', encoding='utf-8') as f:
-        f.write(json.dumps(content, ensure_ascii=False) + '\n')
+        f.write(content)
         f.close()
     return
-'''
-def writeToXLS(content, fileName):
-    workbook = xlwt.Workbook(encoding='utf-8')
-    booksheet = workbook.add_sheet('Sheet 1', cell_overwrite_ok=True)
-    for i, rowVal in enumerate(content):
-        for j, colVal in enumerate(rowVal):
-            booksheet.write(i, j, colVal)
-    workbook.save('%s.xls' % fileName)
-    return
-'''
 
 def crawlWeiZS(keywords, sDate, eDate):
+    weiZSData = []
     for keyword in keywords:
-        f = open('%s.txt' % keyword, 'w')
+        print(keyword)
         weiZSOrigin = getWeiZSOrigin(keyword, sDate, eDate)
-        weiZSVaule = getWeiZSVaule(weiZSOrigin)
-        print(int(weiZSVaule[0]['day_key'].replace('-', '')) == 20170801)
-        f.write(str(weiZSVaule))
-        f.close()
+        weiZSVaule = getWeiZSVaule(keyword, weiZSOrigin)
+        weiZSData.append(weiZSVaule)
+    writeToTXT(str(weiZSData).replace("'",'"'), 'sdfg')
 
-
-keywords = ["中国新歌声"]
-sDate, eDate = "2017-08-01", "2017-08-10"
+keywords = ['中国新歌声', '中国有嘻哈', '明日之子', '脱口秀大会', '极限挑战']
+sDate, eDate = "2017-08-01", "2017-08-05"
 crawlWeiZS(keywords, sDate, eDate)
