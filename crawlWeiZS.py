@@ -1,4 +1,4 @@
-#coding = utf-8
+#-*-coding:utf-8-*- 
 #2017-9-10 JoeyChui sa517045@mail.ustc.edu.cn
 
 import urllib, requests
@@ -8,7 +8,7 @@ def getWID(keyword):
                  "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36",
                  "Referer":"http://data.weibo.com/index?sudaref=www.google.com"
              }
-    url = "http://data.weibo.com/index/ajax/hotword?word={}&flag=nolike&_t=0".format(keyword)
+    url = "http://data.weibo.com/index/ajax/hotword?word=%s&flag=nolike&_t=0" % keyword
     result = requests.get(url, headers = header).json()
     if result['code'] != '100000':
         print('ER:%s' % keyword)
@@ -33,29 +33,30 @@ def getWeiZSOrigin(keyword, sDate, eDate):
     result = requests.get(url, headers = header).json()
     return result
 
-def getWeiZSVaule(keyword, weiZSOrigin):
+def getWeiZSVaule(weiZSOrigin):
     weiZSVaule = {}
-    weiZSVaule['keyword'] = keyword
     weiZSZT = weiZSOrigin['zt']
     for ii in range(len(weiZSZT)-1):
         weiZSVaule[weiZSZT[ii]['day_key'].replace('-','')] = weiZSZT[ii]['value']
     return weiZSVaule
 
 def writeToTXT(content, fileName):
-    with open('%s.txt' % fileName, 'a', encoding='utf-8') as f:
+    with open('%s.txt' % fileName, 'w', encoding='utf-8') as f:
         f.write(content)
         f.close()
     return
 
 def crawlWeiZS(keywords, sDate, eDate):
-    weiZSData = []
+    weiZSData = {}
     for keyword in keywords:
         print(keyword)
         weiZSOrigin = getWeiZSOrigin(keyword, sDate, eDate)
-        weiZSVaule = getWeiZSVaule(keyword, weiZSOrigin)
-        weiZSData.append(weiZSVaule)
-    writeToTXT(str(weiZSData).replace("'",'"'), 'sdfg')
+        print(sDate, eDate)
+        weiZSVaule = getWeiZSVaule(weiZSOrigin)
+        weiZSData[keyword] = weiZSVaule
+    writeToTXT(str(weiZSData).replace("'",'"'), 'WeiZS-{}-{}'.format(sDate.replace('-', ''), eDate.replace('-', '')))
 
-keywords = ['中国新歌声', '中国有嘻哈', '明日之子', '脱口秀大会', '极限挑战']
-sDate, eDate = "2017-08-01", "2017-08-05"
+
+keywords = ['开学第一课', '中国新歌声', '中国有嘻哈', '明日之子']
+sDate, eDate = "2017-09-01", "2017-09-12"
 crawlWeiZS(keywords, sDate, eDate)
