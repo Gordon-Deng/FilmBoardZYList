@@ -51,12 +51,11 @@ def crawlWeiZS(keywords, sDate, eDate):
     for keyword in keywords:
         print(keyword)
         weiZSOrigin = getWeiZSOrigin(keyword, sDate, eDate)
-        print(sDate, eDate)
         weiZSVaule = getWeiZSVaule(weiZSOrigin)
         weiZSData[keyword] = weiZSVaule
     writeToTXT(str(weiZSData).replace("'",'"'), 'WeiZS-{}-{}'.format(sDate.replace('-', ''), eDate.replace('-', '')))
 
 
-keywords = ['开学第一课', '中国新歌声', '中国有嘻哈', '明日之子']
-sDate, eDate = "2017-09-01", "2017-09-12"
+keywords = ["中国新歌声", "中国有嘻哈", "中餐厅", "了不起的孩子", "大学生来了", "大片起来嗨", "天使之路", "姐姐好饿", "小手牵小狗", "开学第一课", "开心相对论", "快乐男声", "我们来了", "我们的征途", "我爱二次元", "挑战者联盟", "明日之子", "极速前进", "极限挑战", "火星情报局", "爱笑会议室", "爸爸去哪儿", "脑大洞开", "脱口秀大会", "金星秀", "饭局的诱惑"]
+sDate, eDate = "2017-08-01", "2017-09-10"
 crawlWeiZS(keywords, sDate, eDate)
