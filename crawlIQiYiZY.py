@@ -1,5 +1,5 @@
 #-*-coding:utf-8-*- 
-#2017-9-10 JoeyChui sa517045@mail.ustc.edu.cn
+#2017-9-15 JoeyChui sa517045@mail.ustc.edu.cn
 
 import re, requests, json, xlwt
 from requests.exceptions import RequestException
@@ -51,7 +51,7 @@ def writeToXLS(content, fileName):
 	workbook.save('%s.xls' % fileName)
 	return
 
-def main(page):
+def crawlIQiYiZY(page):
 	SEEDURL = 'http://list.iqiyi.com/www/6/-------------4-%s-1---.html' % page # 按更新时间排序 全网
 	tvIDMonth = getTVID(SEEDURL)
 	print('OK@getTVID')
@@ -60,6 +60,6 @@ def main(page):
 		tvDetail = geTVDetail(item[0], item[1])
 		for ele in tvDetail:
 			tvList.append(ele)
-	writeToXLS(tvList, 'IQiYi%s' % page)
+	writeToXLS(tvList, 'IQiYiZY%s' % page)
 
-main(1)
+crawlIQiYiZY(13)

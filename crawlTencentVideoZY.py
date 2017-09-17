@@ -1,5 +1,5 @@
 #-*-coding:utf-8-*- 
-#2017-9-10 JoeyChui sa517045@mail.ustc.edu.cn
+#2017-9-15 JoeyChui sa517045@mail.ustc.edu.cn
 
 import re, requests, lxml.html, json, xlwt
 from requests.exceptions import RequestException
@@ -26,7 +26,7 @@ def getTVDetail(html):
 	for item in items:
 		tvDate = re.findall('(\d+)-(\d+)-(\d+)', item[0])
 		tvDate = str(tvDate[0][0]) + str(tvDate[0][1]) + str(tvDate[0][2])
-		print(tvDate)
+		print(item[2], item[3], tvDate)
 		yield [item[2], item[3], int(tvDate), getTVDisCnt(item[1]), item[1], 'TencentVideo']
 
 def writeToXLS(content, fileName):
@@ -38,10 +38,10 @@ def writeToXLS(content, fileName):
 	workbook.save('%s.xls' % fileName)
 	return
 
-def main(page):
-	SEEDURL = 'https://v.qq.com/x/list/variety?sort=5&offset=%s' % page
+def crawlTencentVideoZY(offset):
+	SEEDURL = 'https://v.qq.com/x/list/variety?sort=5&offset=%s' % offset
 	html = getOnePage(SEEDURL)
 	tvDetail = getTVDetail(html)
-	writeToXLS(tvDetail, 'TencentVideoZY%s' % page)
+	writeToXLS(tvDetail, 'TencentVideoZY%s' % offset)
 
-main(30)
+crawlTencentVideoZY(150)

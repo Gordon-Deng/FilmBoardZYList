@@ -1,5 +1,5 @@
 #-*-coding:utf-8-*- 
-#2017-9-10 JoeyChui sa517045@mail.ustc.edu.cn
+#2017-9-15 JoeyChui sa517045@mail.ustc.edu.cn
 
 import re, requests, xlwt, json
 from requests.exceptions import RequestException
@@ -20,12 +20,12 @@ def getTVBasic(url):
 	pattern = re.compile('href="//v.youku.com/v_show/id_(\w+==)\.html.*?_src="(http://.*?)".*?alt="(.*?)".*?ibg"></i><span>(.*?)</span>.*?yk-col4 mr1', re.S)
 	items = re.findall(pattern, html)
 	for item in items:
-		print(item[2], 'v.youku.com/v_show/id_'+item[0]+'.html')
 		tvDate = re.findall('(\d\d)-(\d\d)', item[3])
 		if tvDate != []:
 			tvDate = int('2017' + str(tvDate[0][0]) + str(tvDate[0][1]))
 		else:
 			tvDate = item[3]
+		print(item[2], tvDate)
 		yield [item[2], tvDate, item[0], 'http://v.youku.com/v_show/id_'+item[0]+'.html', item[1]]
 
 def getTVID(url):
@@ -83,12 +83,12 @@ def judgeDate(tvDate, startDate, endDate):
 		return True
 	return False
 
-def main(page):
+def crawlYouKuZY(page):
 	SEEDURL = 'http://list.youku.com/category/show/c_85_s_6_d_1_p_%s' % page
 	#STARTDATE, ENDDATE = 20170800, 20170910
 	tvBasic = getTVBasic(SEEDURL)
 	tvDetail = getTVDetail(tvBasic)
-	writeToXLS(tvDetail, 'Youku%s' % page)
+	writeToXLS(tvDetail, 'YoukuZY%s' % page)
 
 
-main(10)
+crawlYouKuZY(8)
